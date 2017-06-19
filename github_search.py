@@ -27,18 +27,21 @@ def search_repositories(term, session=requests, oauth={}):
         The response is wrapped in a dict, to account for possible failures
         of the github api or the network.
     """
-
-    response = session.get(
-        SEARCH_ENDPOINT,
-        headers=headers_for_github,
-        params=[
+    get_params = [
             ('q', term),
             # ('sort', 'updated'), # we implement our own sorting
             # ('sort', 'stars'),
             # ('sort', 'forks'),
             # ('order', 'desc'),
             # ('order', 'asc'),
-        ] + oauth.items()
+    ]
+    if oauth:
+        get_params.extend(oauth.items())
+
+    response = session.get(
+        SEARCH_ENDPOINT,
+        headers=headers_for_github,
+        params=get_params,
     )
     if response.status_code == 200:
         github_data = response.json()
@@ -52,7 +55,7 @@ def search_repositories(term, session=requests, oauth={}):
 
 def repository_details(repo_data, session=requests, oauth={}):
     url = repo_data['commits_url'].replace('{/sha}', '')
-    response = session.get(url, params=oauth.items())
+    response = session.get(url)
     repo_data = response.json()
     return {
         'github_status': response.status_code,

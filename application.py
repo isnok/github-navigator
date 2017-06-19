@@ -2,6 +2,7 @@
 
 import dateutil.parser
 import logging
+import six
 from flask import Flask, request, render_template
 from flask_restful import Resource, Api, reqparse
 from github_search import make_session, search_repositories, repository_details
@@ -121,8 +122,8 @@ def load_oauth_file(name):
         with open(name) as fh:
             import json
             oauth_credentials = json.loads(fh.read())
-            assert(isinstance(oauth_credentials['client_id'], basestring))
-            assert(isinstance(oauth_credentials['client_secret'], basestring))
+            assert(isinstance(oauth_credentials['client_id'], six.string_types))
+            assert(isinstance(oauth_credentials['client_secret'], six.string_types))
             OAUTH_CREDENTIALS = oauth_credentials
             app.logger.info("Successfully loaded OAUTH credentials from '{file}'.".format(file=name))
     except Exception as ex:

@@ -6,19 +6,19 @@
 <body>
     <h1>{{search_term}}</h1>
 {% for repo in items %}
-<h2>1. {{repo['name']}}</h2>
-<h3> Created {{repo['created_at']}}</h3>
+<h2>{{loop.index}}. <a href="{{repo['html_url']}}">{{repo['name']}}</a></h2>
+<h3> Created {{extra_data[repo['id']]['datetime_created'].strftime('%Y-%m-%d %H:%M:%S')}}</h3>
 <a href="{{repo['owner']['html_url']}}"><img src="{{repo['owner']['avatar_url']}}" alt="avatar" height="42" width="42"/>
 {{repo['owner']['login']}}</a><br/><br/>
 {% set commits = commit_data[repo['id']]%}
 {% if commits %}
 <h3>LastCommit:</h3>
-sha: {{commits[0]['sha']}} <br/>
+sha: <a href="{{extra_data[repo['id']]['latest_commit_url']}}">{{commits[0]['sha']}}</a> <br/>
 message: <strong>{{commits[0]['commit']['message']}}</strong> <br/>
 comitter: {{commits[0]['committer']['login']}} <br/>
 {% else %}
 <h3>No commit data available:</h3>
-api message: <a href="{{no_commit_data[repo['id']]['check_url']}}">{{no_commit_data[repo['id']]['message']}}</a>
+api message: <a href="{{extra_data[repo['id']]['check_url']}}">{{extra_data[repo['id']]['message']}}</a>
 {% endif %}
 <hr/>
 {% endfor %}

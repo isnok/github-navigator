@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Github Navigator</title>
+</head>
+<body>
+    <h1>{{search_term}}</h1>
+{% for repo in items %}
+<h2>1. {{repo['name']}}</h2>
+<h3> Created {{repo['created_at']}}</h3>
+<a href="{{repo['owner']['html_url']}}"><img src="{{repo['owner']['avatar_url']}}" alt="avatar" height="42" width="42"/>
+{{repo['owner']['login']}}</a><br/><br/>
+{% set commits = commit_data[repo['id']]%}
+{% if commits %}
+<h3>LastCommit:</h3>
+sha: {{commits[0]['sha']}} <br/>
+message: <strong>{{commits[0]['commit']['message']}}</strong> <br/>
+comitter: {{commits[0]['committer']['login']}} <br/>
+{% else %}
+<h3>No commit data available:</h3>
+api message: <a href="{{no_commit_data[repo['id']]['check_url']}}">{{no_commit_data[repo['id']]['message']}}</a>
+{% endif %}
+<hr/>
+{% endfor %}
+</body>
+</html>

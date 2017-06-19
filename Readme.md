@@ -1,39 +1,86 @@
-Github navigator assignment task
---------------------------------
+# Github Navigator
 
-- In this file I do only present the background information on the task I was assigned. General information on the code is located in "Readme.md".
+A simple repository search and detail display.
 
-- I solved this task using flask, which is great for small web applications like this one.
+## Installation
 
-- I have never used flask productively before, but i considered it a couple of times. I always ended up using django in these cases because the projects were planned to be somewhat bigger and more frontend-heavy. I find django allows for a more conventional code organization in such cases.
+This application requires `python` 2 or 3 and `pip`.
+`pip` is used to install the additional required python libraries, namely `flask`, `flask-restful`, `python-dateutil` and `requests`.
+To set it up in a virtual environment also `virtualenv` is required.
 
-- I didn't spend a lot of time on optical polishing, but I think I met most specs (data formatting) given through the assignment, template and example.
+### Setting up requirements
 
-- Coding went smoothly, and I had the app display commit details even before I hit githubs rate limit. I figured that that should be circumvented as well, so I added a way to provide optional OAUTH credentials to the app.
+Run these commands in a terminal from the extracted archives root directory:
 
-- Since I was working with github already, I could not resist the temptation to put the project on github (without any reference to you, or assignment texts). The repo can be found here: https://github.com/isnok/github-navigator
+```shell
+    $ virtualenv venv
+    $ . venv/bin/activate
+    $ pip install -r requirements.txt
+```
 
-- If you request me to take it off from github, then I will do so promptly of course.
+To set up the application without a virtual environment only the last line is needed.
 
-- File structure:
-.
-├── application.py    -- The uWSGI application
-├── github_search.py  -- A program library that i created for API-communication with github
-├── oauth.json        -- (optional) OAUTH credentials (you need to create that by yourself, see Readme.md)
-├── Readme.md         -- The Project Readme. Consider this an extension of this document
-├── requirement.txt   -- project dependencies, as by python-convention
-└── templates         -- flask by default searches templates here. So I went with that.
-    ├── index.html    -- Template for the additional index page of the application
-    └── results.html  -- The template for the search results page
+## Running the application
 
-- The results template could be cleaned up a bit more, but I figured that that is not the main focus of this exercise.
+Once the requirements are installed, the application can be run using:
 
-- When I started this off, I began with implementing a simple API that serves the search results from github. This was most convenient because i would't have to bother with template rendering until i got to that point. Technically the API is not required, but it would be the way to go, if we wanted to add an AJAX-Layer for a nice-looking JavaScript frontend. I left it in there, eventhough the flask-restful requirement could be dropped without it.
+```shell
+    $ ./application.py
+```
 
-- I was not extra cautious about handling errors. Although I handled all errors from github that i could perceive, and whatever i was expecting to probably fail. Still some dictionary lookups may fail if data structures vary. This was due to the fact, that this is only an assignment project, and github is known to be a `good web citicen`, so they wouldn't change their data structures inside one API version. For a production task i would come up with some more ways of data validation.
+or
 
-- I did not implement any tests for the project. This is of course also due to the fact, that tests were not required in the assignment.
+```shell
+    $ python -m application
+```
 
-- The github_search.py program library file can also be run standalone, for manual debugging. The code executed is at the end of the file and can be adapted to debugging needs.
+## Using the application
 
-- Overall I had a good time implementing this excercise. I will appreciate any feedback regarding it.
+When the application is running in a terminal, it can be accessed through browser at `localhost:9876`.
+This will bring up a search form, where you can type in a search term, and click `Submit Query` to get to the search results.
+To instantly get to the search results for a search term `<term>` navigate your browser to `localhost:9876/navigator?search_term=<term>` and the results will be fetched and served by the application.
+
+## Optional Setup (relax github rate limiting)
+
+Github limits the request rate of IPs to 60 API requests per hour.
+One search query requires 6 requests (1 search + 5 commit details).
+To get a better experience, you can create an OAUTH-Token in your github profile settings, which will allow the app to authenticate as your github profile and this will raise the rate limit to 5000 requests per hour.
+In your profile settings choose "Developer settings" -> "OAuth applications" in the menu on the left.
+Then click "Register a new application" and fill in some details (the "Authorization callback URL" will not be used).
+Once the token is created, create a file named `oauth.json` in the folder from where you run the application and fill it as follows:
+```
+{
+ "client_id": "<client-id>",
+ "client_secret": "<client-secret>"
+}
+```
+Of course you have to replace `<client-id>` and `<client-secret>` with the values of your newly created application token from github.
+
+If you then restart the application, you should see a message in it's output like this:
+```
+--------------------------------------------------------------------------------
+INFO in application [application.py:128]:
+Successfully loaded OAUTH credentials from 'oauth.json'.
+--------------------------------------------------------------------------------
+```
+
+If loading the file was not successful you will see something like this:
+
+```
+--------------------------------------------------------------------------------
+INFO in application [application.py:130]:
+Failed to load OAUTH credentials from 'oauth.json'.
+Exception was: [Errno 2] No such file or directory: 'oauth.json'
+--------------------------------------------------------------------------------
+```
+
+### How this works
+
+The client-id and client-secret loaded from the file `oauth.json` will be added to all API-requests as GET-Parameters.
+To check if it is functioning correctly you can run
+```shell
+    $ curl -i 'https://api.github.com/users/whatever?client_id=xxxx&client_secret=yyyy'
+```
+
+after a few search requests, and see if some of your contingent is used.
+More information on this can be found here: https://developer.github.com/v3/#rate-limiting

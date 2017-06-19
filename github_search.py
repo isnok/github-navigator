@@ -22,7 +22,7 @@ def make_session():
     session.headers.update(headers_for_github)
     return session
 
-def search_repositories(term, session=requests):
+def search_repositories(term, session=requests, oauth={}):
     """ Run a search on github, and return the parsed JSON respose.
         The response is wrapped in a dict, to account for possible failures
         of the github api or the network.
@@ -38,7 +38,7 @@ def search_repositories(term, session=requests):
             # ('sort', 'forks'),
             # ('order', 'desc'),
             # ('order', 'asc'),
-        ]
+        ] + oauth.items()
     )
     if response.status_code == 200:
         github_data = response.json()
@@ -50,9 +50,9 @@ def search_repositories(term, session=requests):
     }
 
 
-def repository_details(repo_data, session=requests):
+def repository_details(repo_data, session=requests, oauth={}):
     url = repo_data['commits_url'].replace('{/sha}', '')
-    response = session.get(url)
+    response = session.get(url, params=oauth.items())
     repo_data = response.json()
     return {
         'github_status': response.status_code,

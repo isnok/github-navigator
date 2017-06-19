@@ -63,7 +63,11 @@ def search_repos():
     search_term = term_parser.parse_args()['search_term']
 
     session = make_session()
-    search_result = search_repositories(search_term, session=session)
+    search_result = search_repositories(
+        search_term,
+        session=session,
+        oauth=OAUTH_CREDENTIALS,
+    )
 
     if search_result['github_status'] == 200:
         repos = sort_data(search_result['github_data']['items'])
@@ -75,7 +79,11 @@ def search_repos():
     commit_data = {}
     no_commit_data = {}
     for search_result in repos:
-        result = repository_details(search_result, session=session)
+        result = repository_details(
+            search_result,
+            session=session,
+            oauth=OAUTH_CREDENTIALS,
+        )
         if result['github_status'] == 200:
             commit_data[search_result['id']] = result['github_data']
         else:
@@ -93,6 +101,22 @@ def search_repos():
         no_commit_data=no_commit_data,
     )
 
+
+OAUTH_CREDENTIALS = {}
+def load_oauth_file(name):
+    global OAUTH_CREDENTIALS
+    try:
+        with open(name) as fh:
+            import json
+            oauth_credentials = json.loads(fh.read())
+            assert(isinstance(oauth_credentials['client_id'], basestring))
+            assert(isinstance(oauth_credentials['client_secret'], basestring))
+            OAUTH_CREDENTIALS = oauth_credentials
+            app.logger.info("Successfully loaded OAUTH credentials from '{file}'.".format(file=name))
+    except Exception as ex:
+        app.logger.info("Failed to load OAUTH credentials from '{file}'.\nException was: {exc}".format(file=name, exc=ex))
+
+load_oauth_file('oauth.json')
 
 if __name__ == '__main__':
     app.run()
